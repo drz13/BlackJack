@@ -19,7 +19,7 @@ enum RoundResult
 	Push,
 };
 
-enum CardValueNames
+enum CardFace
 {
 	Ace, 
 	Two, 
@@ -37,7 +37,7 @@ enum CardValueNames
 };
  
 array<string, 13> CardValuePrintNames = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10","Jack", "Queen", "King"};
-array<int, 13> CardValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
+array<int, 13> CardValues = { 11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10 };
 
 enum CardSuit
 {
@@ -52,13 +52,13 @@ array<string,4> CardSuitNames = { "Hearts", "Spades", "Clubs", "Diamonds"};
 struct Card
 {
 public:
-	CardValueNames valueNames;
+	CardFace cardName;
 	CardSuit suit;
 	bool faceup;
 
 
-	Card(CardValueNames valueNames, CardSuit suit, bool face =true) :
-		valueNames(valueNames), suit(suit), faceup(face)
+	Card(CardFace cardName, CardSuit suit, bool face =true) :
+		cardName(cardName), suit(suit), faceup(face)
 	{
 	};
 
@@ -66,7 +66,7 @@ public:
 	{
 		if (faceup)
 		{
-			cout << "\t" << CardValuePrintNames[this->valueNames] << " of " << CardSuitNames[this->suit] << endl;
+			cout << "\t" << CardValuePrintNames[this->cardName] << " of " << CardSuitNames[this->suit] << endl;
 		}
 		else
 		{
@@ -99,7 +99,7 @@ public:
 			{
 				for (int suits = 0; suits < 4; suits++)
 				{
-					cards.push_back(Card((CardValueNames)values, (CardSuit)suits));
+					cards.push_back(Card((CardFace)values, (CardSuit)suits));
 					k++;
 				}
 			}
@@ -129,26 +129,32 @@ class Hand
 {
 public :
 	vector <Card> cards;
+	int numAces;
+	int currentHandValue;
 
 	void addCard(Card card)
 	{
 		cards.push_back(card);
+		currentHandValue += CardValues[card.cardName];
+		if (card.cardName == Ace)
+		{
+			numAces++;
+		}
+		
+		while (currentHandValue > BLACKJACK && numAces > 0)
+		{
+			currentHandValue -= 10;
+			numAces--;
+		}
 	}
 
-	int HandSum()
+	int getHandValue()
 	{
-		int sum = 0;
-
-		for (const auto& card : cards)
-		{
-			
-			sum += CardValues[card.valueNames];
-		}
-
-		return sum;
+		return currentHandValue;
 	};
 
 	Hand()
+		: numAces(0), currentHandValue(0)
 	{
 
 	}
@@ -163,7 +169,7 @@ public :
 
 	void printHandValue()
 	{
-		cout << "Hand Sum = " << HandSum() << endl << endl;
+		cout << "Hand Sum = " << getHandValue() << endl << endl;
 	}
 
 	void reveal()
@@ -222,7 +228,7 @@ public:
 					cout << "Hit Me!" << endl;
 					hand.addCard(deck.deal());
 
-					if (hand.HandSum() >= BLACKJACK)
+					if (hand.getHandValue() >= BLACKJACK)
 					{
 						playerFinished = true;
 					}
@@ -292,7 +298,7 @@ public:
 		// this is actually a state machine, but i dont want to do that right now. 
 		while (dealerFinished != true)
 		{
-			if (hand.HandSum() >= DEALER_LIMIT)
+			if (hand.getHandValue() >= DEALER_LIMIT)
 			{
 				dealerFinished = true;
 			}			
@@ -363,8 +369,8 @@ public:
 		cout << "Dealer's Hand:" << endl;
 		dealer.hand.printHand();
 
-		int playerSum = player.hand.HandSum();
-		int dealerSum = dealer.hand.HandSum();
+		int playerSum = player.hand.getHandValue();
+		int dealerSum = dealer.hand.getHandValue();
 		if (playerSum == BLACKJACK)		// player WIN
 		{
 			cout << "Player Wins" << endl;
