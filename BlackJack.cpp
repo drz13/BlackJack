@@ -9,6 +9,16 @@
 
 using namespace std;
 
+constexpr int BLACKJACK = 21;
+constexpr int DEALER_LIMIT = 17;
+
+enum RoundResult
+{
+	Win,
+	Loss,
+	Push,
+};
+
 enum CardValueNames
 {
 	Ace, 
@@ -56,12 +66,17 @@ public:
 	{
 		if (faceup)
 		{
-			cout << CardValuePrintNames[this->valueNames] << " of " << CardSuitNames[this->suit] << endl;
+			cout << "\t" << CardValuePrintNames[this->valueNames] << " of " << CardSuitNames[this->suit] << endl;
 		}
 		else
 		{
-			cout << "Facedown Card" << endl;;
+			cout << "\tFacedown Card" << endl;;
 		}
+	}
+
+	void reveal()
+	{
+		faceup = true;
 	}
 };
 
@@ -145,6 +160,19 @@ public :
 			card.printCard();
 		}
 	}
+
+	void printHandValue()
+	{
+		cout << "Hand Sum = " << HandSum() << endl << endl;
+	}
+
+	void reveal()
+	{
+		for (auto& c : cards)
+		{
+			c.reveal();
+		}
+	}
 };
 
 
@@ -172,9 +200,9 @@ public:
 		hand.addCard(deck.deal());
 	}
 	
-	virtual int playRound(Deck& deck)
+	virtual void playRound(Deck& deck)
 	{
-		cout << "Hand Sum = " <<  hand.HandSum() << endl;
+		hand.printHandValue();
 
 		bool playerFinished = false;
 		int option = 0; 
@@ -183,25 +211,38 @@ public:
 		while (playerFinished != true)
 		{
 			cout << "Hit or Stand? " << endl;
-			cout << "    1. Hit" << endl;
-			cout << "    2. Stand" << endl;
+			cout << "\t1. Hit" << endl;
+			cout << "\t2. Stand" << endl;
 			cin >> option;
 
-			playerFinished = true;
 
 			switch (option)
 			{
 				case 1: // Hit
+					cout << "Hit Me!" << endl;
+					hand.addCard(deck.deal());
+
+					if (hand.HandSum() >= BLACKJACK)
+					{
+						playerFinished = true;
+					}
+					hand.printHandValue();
+					cout << "Player's Hand:" << endl;
+					hand.printHand();
+					cout << endl;
 					break;
+
 				case 2: // Stand
+					cout << "No Thanks" << endl;
+					playerFinished = true;
 					break;
+
 				default: 
-					playerFinished = false;
 					cout << "Invalid Option" << endl;
 			}
-		}
 
-		return 0;
+
+		}
 	}
 
 	int placeBet()
@@ -240,12 +281,29 @@ public:
 	void dealHand(Deck& deck) override
 	{
 		hand.addCard(deck.deal());
-		hand.addCard(deck.deal(true));
+		hand.addCard(deck.deal(false));
 	}
 
-	int playRound(Deck& deck) override
+	void playRound(Deck& deck) override
 	{
-		return 0;
+		bool dealerFinished = false;
+
+		// this is actually a state machine, but i dont want to do that right now. 
+		while (dealerFinished != true)
+		{
+			if (hand.HandSum() >= DEALER_LIMIT)
+			{
+				dealerFinished = true;
+			}			
+			else
+			{			
+				hand.addCard(deck.deal());
+			}
+
+			cout << "Dealer's Hand:" << endl;
+			hand.printHand();
+			cout << endl;
+		}
 	}
 };
 
@@ -258,6 +316,8 @@ public:
 
 	void startGame();
 	void nextNext();
+
+	vector<RoundResult> results;
 
 	Game(int numDecks = 1)
 	{
@@ -273,10 +333,12 @@ public:
 		dealer.dealHand(deck);
 
 		// 1 print values of each hand
+		cout << "Player's Hand:" << endl;
 		player.hand.printHand();
-		cout << "Hand Value = " << player.hand.HandSum() << endl;
+		player.hand.printHandValue();
+
+		cout << "Dealer's Hand:" << endl;
 		dealer.hand.printHand();
-		cout << "Hand Value = " << dealer.hand.HandSum() << endl;
 
 		// 2. player places bet
 		int playerBet = player.placeBet();
@@ -289,7 +351,31 @@ public:
 		dealer.playRound(deck);
 
 		// 5. compare hands determine winner
+		dealer.hand.reveal();
 
+		int playerSum = player.hand.HandSum();
+		int dealerSum = dealer.hand.HandSum();
+		if (playerSum == BLACKJACK)		// player WIN
+		{
+		}
+		else if (playerSum > BLACKJACK) // player BUST
+		{
+		}
+		else if (dealerSum > BLACKJACK) // dealer BUST
+		{
+		}
+		else if (playerSum > dealerSum) // player beat dealer
+		{
+
+		}
+		else if (playerSum < dealerSum) // dealer beat player
+		{
+
+		}
+		else if (playerSum == dealerSum)// push
+		{
+
+		}
 		// 6. report result
 		return 0;
 	}
