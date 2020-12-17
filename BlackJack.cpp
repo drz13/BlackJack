@@ -191,18 +191,16 @@ public:
 class Game 
 {
 public:
-	vector<Player>& players;
+	Player player;
 	Dealer dealer;
 	Deck deck;
 
 	void startGame();
 	void nextNext();
 
-	Game(vector<Player>& p, int numDecks = 1)
-		: players(p)
+	Game(int numDecks = 1)
 	{
 		deck = Deck(numDecks);
-
 
 	}
 
@@ -223,20 +221,12 @@ public:
 	int round()
 	{
 		// 0. deal starting hands to players and dealer
-		for (auto& p : players)
-		{
-			p.dealHand(deck);
-		}
+		player.dealHand(deck);
 		dealer.dealHand(deck);
 
 		// 0.1 print values of each hand
-		for (auto& p : players)
-		{
-			p.hand.printHand();
-			cout << "Hand Value = " << p.hand.HandSum() << endl;
-
-			// if a player busts, they're out, keep track in round result vector
-		}
+		player.hand.printHand();
+		cout << "Hand Value = " << player.hand.HandSum() << endl;
 		dealer.hand.printHand();
 		cout << "Hand Value = " << dealer.hand.HandSum() << endl;
 
@@ -251,23 +241,8 @@ public:
 
 int main(void)
 {
-	int numPlayers = 0;
-
-	cout << "How many players? ";
-	cin >> numPlayers;
-
-	if (numPlayers > 6)
-	{
-		numPlayers = 6;
-	}
-
-	vector<Player> players;
-	for (int i = 0; i < numPlayers; i++)
-	{
-		players.push_back(Player());
-	}
-
-	Game game(players);
+	
+	Game game();
 
 	// run the round
 	int roundResult = game.round();
