@@ -126,6 +126,7 @@ public :
 
 		for (const auto& card : cards)
 		{
+			
 			sum += CardValues[card.valueNames];
 		}
 
@@ -170,6 +171,17 @@ public:
 		hand.addCard(deck.deal());
 		hand.addCard(deck.deal());
 	}
+	
+	virtual int playRound(Deck& deck)
+	{
+		cout << "Hand Sum = " <<  hand.HandSum() << endl;
+		return 0;
+	}
+
+	int placeBet()
+	{
+		return 0;
+	}
 };
 
 
@@ -185,6 +197,11 @@ public:
 	{
 		hand.addCard(deck.deal());
 		hand.addCard(deck.deal(true));
+	}
+
+	int playRound(Deck& deck) override
+	{
+		return 0;
 	}
 };
 
@@ -206,17 +223,15 @@ public:
 
 	// round
 	// 0. deal two cards to each player and two to the dealer
-	// 0.1 print the faceup values of the respective hands
-	// 1. iterate through player vector, have players do their round
-	//	1.0 calculate player hand -> bust or go on
-	//	1.1 player places bet
-	//	1.2 player given options -> if pass go to 2
-	//  1.3 return to 1.0 
-	// 2. dealer does their thing (dealer.doRound())
-	//	2.1 dealer hits until bust or >=17
-	// 3. print all player scores/busts
-	// 4. determine winner/tie ("push")
-	// 5. round result reported (+/- for each player)
+	// 1. print the faceup values of the respective hands
+	// 2. player places bet
+	// 3. player plays their round
+	//	3.1 player given options -> if pass go to 2
+	//  3.2 return to 1.0 
+	// 4. dealer does their thing (dealer.doRound())
+	//	4.1 dealer hits until bust or >=17
+	// 5. determine winner/tie ("push")
+	// 6. round result reported (+/- for each player)
 
 	int round()
 	{
@@ -224,13 +239,24 @@ public:
 		player.dealHand(deck);
 		dealer.dealHand(deck);
 
-		// 0.1 print values of each hand
+		// 1 print values of each hand
 		player.hand.printHand();
 		cout << "Hand Value = " << player.hand.HandSum() << endl;
 		dealer.hand.printHand();
 		cout << "Hand Value = " << dealer.hand.HandSum() << endl;
 
+		// 2. player places bet
+		player.placeBet();
 
+		// 3. player plays round
+		player.playRound(deck);
+
+		// 4. dealer plays round
+		dealer.playRound(deck);
+
+		// 5. compare hands determine winner
+
+		// 6. report result
 		return 0;
 	}
 
@@ -242,7 +268,7 @@ public:
 int main(void)
 {
 	
-	Game game();
+	Game game;
 
 	// run the round
 	int roundResult = game.round();
