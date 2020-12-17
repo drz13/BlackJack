@@ -144,23 +144,62 @@ class Player
 public:
 	int hit();
 	void stand();
+	int points;
 	//int doubledown
 	//fn split
 	//fn surrender
 
 	Hand hand;
+
+	Player() 
+		:dollars(100)
+	{
+
+	}
 };
 
 
 class Dealer: public Player
 {
+public:
+	Dealer()
+	{
 
+	}
 };
 
 class Game 
 {
-	vector<Player> players;
-	Deck gameDeck;
+public:
+	vector<Player>& players;
+	Dealer dealer;
+	Deck deck;
+
+	void startGame();
+	void nextNext();
+
+	Game(vector<Player>& p, int numDecks = 1)
+		: players(p)
+	{
+		deck = Deck(numDecks);
+
+
+	}
+
+	// round
+	// 0. deal two cards to each player
+	// 0.1 print the faceup values of the respective hands
+	// 1. iterate through player vector, have players do their round
+	//	1.0 calculate player hand -> bust or go on
+	//	1.1 player places bet
+	//	1.2 player given options -> if pass go to 2
+	//  1.3 return to 1.0 
+	// 2. dealer does their thing (dealer.doRound())
+	//	2.1 dealer hits until bust or >=17
+	// 3. print all player scores/busts
+	// 4. determine winner/tie ("push")
+	// 5. player +/- points depending on outcome
+	// 6. player can then start new round (keep score) or end (maybe record high score in tally)
 };
 
 int main(void)
