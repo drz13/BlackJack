@@ -105,7 +105,7 @@ public:
 			}
 		}
 	
-		//shuffle();
+		shuffle();
 	}
 
 	Card deal(bool face=true)
@@ -226,10 +226,11 @@ public:
 					{
 						playerFinished = true;
 					}
-					hand.printHandValue();
 					cout << "Player's Hand:" << endl;
 					hand.printHand();
 					cout << endl;
+					hand.printHandValue();
+
 					break;
 
 				case 2: // Stand
@@ -313,21 +314,28 @@ public:
 	Player player;
 	Dealer dealer;
 	Deck deck;
+	int numDecks;
 
 	void startGame();
 	void nextNext();
 
-	vector<RoundResult> results;
 
-	Game(int numDecks = 1)
+	Game(int decks = 1)
 	{
-		deck = Deck(numDecks);
-
+		deck = Deck(decks);
+		numDecks = decks;
 	}
 
-
-	int round()
+	void reset()
 	{
+		deck = Deck(numDecks);
+		player.hand = Hand();
+		dealer.hand = Hand();
+	}
+
+	void round()
+	{
+
 		// 0. deal starting hands to players and dealer
 		player.dealHand(deck);
 		dealer.dealHand(deck);
@@ -352,32 +360,40 @@ public:
 
 		// 5. compare hands determine winner
 		dealer.hand.reveal();
+		cout << "Dealer's Hand:" << endl;
+		dealer.hand.printHand();
 
 		int playerSum = player.hand.HandSum();
 		int dealerSum = dealer.hand.HandSum();
 		if (playerSum == BLACKJACK)		// player WIN
 		{
+			cout << "Player Wins" << endl;
+			player.cash += playerBet;
 		}
 		else if (playerSum > BLACKJACK) // player BUST
 		{
+			cout << "Player Bust" << endl;
+			player.cash -= playerBet;
 		}
 		else if (dealerSum > BLACKJACK) // dealer BUST
 		{
+			cout << "Dealer Bust" << endl;
 		}
 		else if (playerSum > dealerSum) // player beat dealer
 		{
-
+			cout << "Player Wins" << endl;
+			player.cash += playerBet;
 		}
 		else if (playerSum < dealerSum) // dealer beat player
 		{
-
+			cout << "Dealer Wins" << endl;
 		}
 		else if (playerSum == dealerSum)// push
 		{
-
+			cout << "Push" << endl;
 		}
-		// 6. report result
-		return 0;
+		cout << "\tPlayer Cash Total = " << player.cash << endl;
+
 	}
 
 	// in main loop
@@ -391,9 +407,26 @@ int main(void)
 	Game game;
 
 	// run the round
-	int roundResult = game.round();
+	bool continuePlay = true;
+	int roundNum = 1;
+	char nextRound = 'y';
 
-	//updatePlayerScores(roundResult);
+	while (continuePlay)
+	{
+		cout << "Round #" << roundNum << endl;
+		game.round();
+
+		game.reset();
+
+		cout << "Keep Playing? y/n";
+		cin >> nextRound;
+		if (nextRound == 'n')
+		{
+			continuePlay = false;
+		}
+	}
+	
+
 
 	return 0;
 
