@@ -42,19 +42,26 @@ array<string,4> CardSuitNames = { "Hearts", "Spades", "Clubs", "Diamonds"};
 struct Card
 {
 public:
-	bool faceup;
 	CardValueNames valueNames;
 	CardSuit suit;
+	bool faceup;
 
 
-	Card(CardValueNames valueNames, CardSuit suit) :
-		valueNames(valueNames), suit(suit)
+	Card(CardValueNames valueNames, CardSuit suit, bool face =true) :
+		valueNames(valueNames), suit(suit), faceup(face)
 	{
 	};
 
 	void printCard() const
 	{
-		cout << CardValuePrintNames[this->valueNames] << " of " << CardSuitNames[this->suit] << endl;
+		if (faceup)
+		{
+			cout << CardValuePrintNames[this->valueNames] << " of " << CardSuitNames[this->suit] << endl;
+		}
+		else
+		{
+			cout << "Facedown Card" << endl;;
+		}
 	}
 };
 
@@ -86,10 +93,11 @@ public:
 		//shuffle();
 	}
 
-	Card deal()
+	Card deal(bool face=true)
 	{
 		Card card = this->cards.back();
 		this->cards.pop_back();
+		card.faceup = face;
 		return card;
 	}
 
@@ -145,6 +153,7 @@ public:
 	int hit();
 	void stand();
 	int points;
+	//int playerNumber;
 	//int doubledown
 	//fn split
 	//fn surrender
@@ -152,9 +161,14 @@ public:
 	Hand hand;
 
 	Player() 
-		:dollars(100)
+		:points(100)
 	{
+	}
 
+	virtual void dealHand(Deck& deck)
+	{
+		hand.addCard(deck.deal());
+		hand.addCard(deck.deal());
 	}
 };
 
@@ -165,6 +179,12 @@ public:
 	Dealer()
 	{
 
+	}
+
+	void dealHand(Deck& deck) override
+	{
+		hand.addCard(deck.deal());
+		hand.addCard(deck.deal(true));
 	}
 };
 
@@ -187,7 +207,7 @@ public:
 	}
 
 	// round
-	// 0. deal two cards to each player
+	// 0. deal two cards to each player and two to the dealer
 	// 0.1 print the faceup values of the respective hands
 	// 1. iterate through player vector, have players do their round
 	//	1.0 calculate player hand -> bust or go on
@@ -198,27 +218,61 @@ public:
 	//	2.1 dealer hits until bust or >=17
 	// 3. print all player scores/busts
 	// 4. determine winner/tie ("push")
-	// 5. player +/- points depending on outcome
-	// 6. player can then start new round (keep score) or end (maybe record high score in tally)
+	// 5. round result reported (+/- for each player)
+
+	int round()
+	{
+		// 0. deal starting hands to players and dealer
+		for (auto& p : players)
+		{
+			p.dealHand(deck);
+		}
+		dealer.dealHand(deck);
+
+		// 0.1 print values of each hand
+		for (auto& p : players)
+		{
+			p.hand.printHand();
+			cout << "Hand Value = " << p.hand.HandSum() << endl;
+
+			// if a player busts, they're out, keep track in round result vector
+		}
+		dealer.hand.printHand();
+		cout << "Hand Value = " << dealer.hand.HandSum() << endl;
+
+
+		return 0;
+	}
+
+	// in main loop
+	// 6. player +/- points depending on outcome
+	// 7. player can then start new round (keep score) or end (maybe record high score in tally)
 };
 
 int main(void)
 {
-	// init player and dealer hands
-	Deck gameDeck(2);
-	
-	gameDeck.printDeck();
-	cout << "deck size = " << gameDeck.cards.size() << endl;
+	int numPlayers = 0;
 
-	Hand hand1;
+	cout << "How many players? ";
+	cin >> numPlayers;
 
-	hand1.addCard(gameDeck.deal());
-	
-	cout << "Hand 1 = "; 
-	hand1.printHand();
+	if (numPlayers > 6)
+	{
+		numPlayers = 6;
+	}
 
-	cout << "Hand 1 sum = " << hand1.HandSum();
+	vector<Player> players;
+	for (int i = 0; i < numPlayers; i++)
+	{
+		players.push_back(Player());
+	}
 
+	Game game(players);
+
+	// run the round
+	int roundResult = game.round();
+
+	//updatePlayerScores(roundResult);
 
 	return 0;
 
