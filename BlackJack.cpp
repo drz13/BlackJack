@@ -153,7 +153,7 @@ class Player
 public:
 	int hit();
 	void stand();
-	int points;
+	int cash;
 	//int playerNumber;
 	//int doubledown
 	//fn split
@@ -162,7 +162,7 @@ public:
 	Hand hand;
 
 	Player() 
-		:points(100)
+		:cash(100)
 	{
 	}
 
@@ -175,12 +175,56 @@ public:
 	virtual int playRound(Deck& deck)
 	{
 		cout << "Hand Sum = " <<  hand.HandSum() << endl;
+
+		bool playerFinished = false;
+		int option = 0; 
+
+		// this is actually a state machine, but i dont want to do that right now. 
+		while (playerFinished != true)
+		{
+			cout << "Hit or Stand? " << endl;
+			cout << "    1. Hit" << endl;
+			cout << "    2. Stand" << endl;
+			cin >> option;
+
+			playerFinished = true;
+
+			switch (option)
+			{
+				case 1: // Hit
+					break;
+				case 2: // Stand
+					break;
+				default: 
+					playerFinished = false;
+					cout << "Invalid Option" << endl;
+			}
+		}
+
 		return 0;
 	}
 
 	int placeBet()
 	{
-		return 0;
+		bool betPlaced = false;
+		int betValue = 0;
+
+		while (betPlaced == false)
+		{
+			cout << "Place your bet: " << endl;
+			cin >> betValue; 
+
+			if (betValue > 0 && betValue <= cash)
+			{
+				betPlaced = true;
+			}
+			else
+			{
+				cout << "Bet must be >0 & <= your cash" << endl;
+			}
+		}
+
+		return betValue;
 	}
 };
 
@@ -221,17 +265,6 @@ public:
 
 	}
 
-	// round
-	// 0. deal two cards to each player and two to the dealer
-	// 1. print the faceup values of the respective hands
-	// 2. player places bet
-	// 3. player plays their round
-	//	3.1 player given options -> if pass go to 2
-	//  3.2 return to 1.0 
-	// 4. dealer does their thing (dealer.doRound())
-	//	4.1 dealer hits until bust or >=17
-	// 5. determine winner/tie ("push")
-	// 6. round result reported (+/- for each player)
 
 	int round()
 	{
@@ -246,7 +279,8 @@ public:
 		cout << "Hand Value = " << dealer.hand.HandSum() << endl;
 
 		// 2. player places bet
-		player.placeBet();
+		int playerBet = player.placeBet();
+		cout << "Player Bets $" << playerBet << endl;
 
 		// 3. player plays round
 		player.playRound(deck);
